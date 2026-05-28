@@ -23,7 +23,7 @@ $env:MYSQL_HOST="<현재 DB VM IP>"
 python app.py
 ```
 
-MySQL 연결이 실패해도 Flask + SQLite + 웹 UI는 동작하지만, 채점 항목인 MySQL 쿼리 로그는 기록되지 않습니다.
+MySQL 연결이 실패해도 Flask + SQLite + 웹 UI는 동작하지만, MySQL 쿼리 로그는 기록되지 않습니다.
 
 Flask + SQLite + jQuery로 만든 할 일 관리 API 및 웹 UI입니다.  
 SQLite에는 회원과 할 일 데이터를 저장하고, MySQL 서버가 실행 중이면 기능 수행 중 발생한 SQL 쿼리를 `todo_log.query_log` 테이블에 기록합니다.
