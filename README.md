@@ -1,5 +1,30 @@
 # exam1 Todo API
 
+## 중요: DB 로그용 MySQL IP 설정
+
+이 프로젝트는 SQLite로 할 일을 저장하고, 별도 DB 서버의 MySQL에 쿼리 로그를 남깁니다.  
+DB 서버 IP는 VirtualBox/네트워크 환경에 따라 바뀔 수 있으므로, **DB 로그 기록까지 확인하려면 실행 전 반드시 MySQL 접속 IP를 현재 DB VM IP로 수정해야 합니다.**
+
+현재 기본값은 `app.py`의 `MYSQL_HOST=192.168.45.61`입니다. DB VM IP가 다르면 아래처럼 환경변수를 먼저 지정하거나 `app.py`의 기본값을 바꾸세요.
+
+```bash
+export MYSQL_HOST=<현재 DB VM IP>
+export MYSQL_PORT=3306
+export MYSQL_USER=todoapp
+export MYSQL_PASSWORD=123
+export MYSQL_DB=todo_log
+python app.py
+```
+
+Windows PowerShell에서는 아래처럼 지정합니다.
+
+```powershell
+$env:MYSQL_HOST="<현재 DB VM IP>"
+python app.py
+```
+
+MySQL 연결이 실패해도 Flask + SQLite + 웹 UI는 동작하지만, 채점 항목인 MySQL 쿼리 로그는 기록되지 않습니다.
+
 Flask + SQLite + jQuery로 만든 할 일 관리 API 및 웹 UI입니다.  
 SQLite에는 회원과 할 일 데이터를 저장하고, MySQL 서버가 실행 중이면 기능 수행 중 발생한 SQL 쿼리를 `todo_log.query_log` 테이블에 기록합니다.
 
@@ -62,7 +87,7 @@ CREATE TABLE IF NOT EXISTS todolist (
 
 ## MySQL 로그 테이블
 
-앱은 기본값으로 DB VM `192.168.45.61:3306`, 사용자 `todoapp`, 비밀번호 `123`, DB명 `todo_log`에 접속을 시도합니다. MySQL 접속 정보가 다르면 환경변수로 지정할 수 있습니다.
+앱은 기본값으로 DB VM `192.168.45.61:3306`, 사용자 `todoapp`, 비밀번호 `123`, DB명 `todo_log`에 접속을 시도합니다. DB VM IP가 바뀌면 `MYSQL_HOST`를 현재 DB VM IP로 반드시 수정해야 쿼리 로그가 기록됩니다.
 
 ```bash
 set MYSQL_HOST=192.168.45.61
