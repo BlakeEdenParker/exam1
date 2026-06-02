@@ -1,0 +1,77 @@
+name: Deploy exam1
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: exam1-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy exam1 to server
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            set -euo pipefail
+
+            APP_DIR="${{ secrets.EXAM1_APP_DIR }}"
+            COMPOSE_DIR="${{ secrets.EXAM1_COMPOSE_DIR }}"
+            GIT_SSH_KEY_PATH="${{ secrets.GIT_SSH_KEY_PATH }}"
+            APP_DIR="${APP_DIR:-/home/ubuntu/docker-compose/web}"
+            COMPOSE_DIR="${COMPOSE_DIR:-/home/ubuntu/docker-compose}"
+            GIT_SSH_KEY_PATH="${GIT_SSH_KEY_PATH:-$HOME/.ssh/id_ed25519}"
+            REPO_URL="git@github.com:BlakeEdenParker/exam1.git"
+
+            if [ ! -f "$GIT_SSH_KEY_PATH" ]; then
+              echo "GitHub deploy key not found: $GIT_SSH_KEY_PATH"
+              exit 1
+            fi
+
+            mkdir -p "$HOME/.ssh"
+            chmod 700 "$HOME/.ssh"
+            ssh-keyscan github.com >> "$HOME/.ssh/known_hosts"
+            chmod 600 "$GIT_SSH_KEY_PATH"
+            export GIT_SSH_COMMAND="ssh -i $GIT_SSH_KEY_PATH -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes"
+
+            mkdir -p "$APP_DIR"
+            cd "$APP_DIR"
+
+            if [ ! -d .git ]; then
+              git init
+              git remote add origin "$REPO_URL"
+            fi
+
+            git remote set-url origin "$REPO_URL"
+            git fetch origin main
+            git checkout -B main origin/main
+            git reset --hard origin/main
+            git clean -fd \
+              -e Dockerfile \
+              -e .dockerignore \
+              -e todo.db \
+              -e server.log \
+              -e server.err.log
+
+            if [ -f "$COMPOSE_DIR/docker-compose.yml" ]; then
+              cd "$COMPOSE_DIR"
+              docker compose up -d --build db exam-web traefik autoscaler
+              docker compose ps db exam-web traefik autoscaler
+            else
+              cd "$APP_DIR"
+              python3 -m venv .venv
+              . .venv/bin/activate
+              pip install --upgrade pip
+              pip install -r requirements.txt
+              sudo systemctl restart exam1
+              sudo systemctl status exam1 --no-pager
+            fi
