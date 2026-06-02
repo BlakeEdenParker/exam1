@@ -18,15 +18,15 @@ jobs:
       - name: Deploy exam1 to server
         uses: appleboy/ssh-action@v1.0.0
         with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USERNAME }}
+          host: ${{ secrets.SERVER_HOST || vars.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME || vars.SERVER_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             set -euo pipefail
 
-            APP_DIR="${{ secrets.EXAM1_APP_DIR }}"
-            COMPOSE_DIR="${{ secrets.EXAM1_COMPOSE_DIR }}"
-            GIT_SSH_KEY_PATH="${{ secrets.GIT_SSH_KEY_PATH }}"
+            APP_DIR="${{ secrets.EXAM1_APP_DIR || vars.EXAM1_APP_DIR }}"
+            COMPOSE_DIR="${{ secrets.EXAM1_COMPOSE_DIR || vars.EXAM1_COMPOSE_DIR }}"
+            GIT_SSH_KEY_PATH="${{ secrets.GIT_SSH_KEY_PATH || vars.GIT_SSH_KEY_PATH }}"
             APP_DIR="${APP_DIR:-/home/ubuntu/docker-compose/web}"
             COMPOSE_DIR="${COMPOSE_DIR:-/home/ubuntu/docker-compose}"
             GIT_SSH_KEY_PATH="${GIT_SSH_KEY_PATH:-$HOME/.ssh/id_ed25519}"
